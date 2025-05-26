@@ -2,9 +2,6 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const mockItems = [
-  { id: 1, name: "Deck inicial - Carta", type: "Carta", availability: "Disponível", price: "R$10", imagens: 5 },
-  { id: 2, name: "Fundo Inicial - Fundo", type: "Fundo", availability: "Indisponível", price: "R$15", imagens: 2 },
-  { id: 3, name: "Ashe - Avatar", type: "Avatar", availability: "Disponível", price: "R$20", imagens: 2}
 ];
 
 export default function EditItem() {

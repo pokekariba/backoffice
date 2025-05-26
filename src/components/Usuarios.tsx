@@ -10,8 +10,6 @@ export default function Usuarios() {
   });
 
   const [items, setItems] = useState([
-    { id: 1, name: "Pedro", email: "pedro@gmail.com", banido: "s" },
-    { id: 2, name: "Joao", email: "joao@gmail.com", banido: "n" },
   ]);
 
   const filteredItems = items.filter(item =>

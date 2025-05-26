@@ -11,9 +11,6 @@ export default function Shop() {
   });
 
   const [items] = useState([
-    { id: 1, name: "Deck inicial - Carta" },
-    { id: 2, name: "Fundo Inicial - Fundo" },
-    { id: 3, name: "Ashe - Avatar" }
   ]);
 
   const filteredItems = items.filter(item =>
