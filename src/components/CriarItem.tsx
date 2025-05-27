@@ -1,35 +1,92 @@
-import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const mockItems: any = [];
+type ItemLoja = {
+  id: number;
+  nome: string;
+  tipo: "deck" | "avatar" | "fundo";
+  disponibilidade: "disponivel" | "indisponivel";
+  preco: number;
+};
 
 export default function CriarItem() {
-  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [itemName, setItemName] = useState("");
-  const [itemType, setItemType] = useState("");
-  const [availability, setAvailability] = useState("");
+  const [itemType, setItemType] = useState<ItemLoja["tipo"]>("deck");
+  const [availability, setAvailability] = useState<ItemLoja["disponibilidade"]>("disponivel");
   const [price, setPrice] = useState("");
-  const [imageName] = useState("imagen.png");
-  const [imagens, setItemImages] = useState(0);
-  useEffect(() => {
-    const item = mockItems.find(i => i.id === Number(id));
-    if (item) {
-      setItemName(item.name);
-      setItemType(item.type);
-      setAvailability(item.availability);
-      setPrice(item.price);
-      setItemImages(item.imagens);
+  const [images, setImages] = useState<FileList | null>(null);
+
+  const token = localStorage.getItem("token");
+
+  const handleCreate = async () => {
+    const preco = parseInt(price);
+    if (isNaN(preco)) return alert("Preço inválido");
+
+    try {
+      const response = await fetch("https://server-efvt.onrender.com/jogo/backoffice/adicionar-item", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${token}`,
+        },
+        body: JSON.stringify({
+          nome: itemName,
+          tipo: itemType,
+          disponibilidade: availability,
+          preco,
+        }),
+      });
+
+
+      const data = await response.json();
+      const createdItemId = data.id 
+
+      if (!createdItemId) {
+        alert("Erro: ID do item não retornado.");
+        return;
+      }
+
+      if (images && images.length > 0) {
+        const formData = new FormData();
+        for (let i = 0; i < images.length; i++) {
+          formData.append("imagens", images[i]);
+        }
+        formData.append("idItem", String(createdItemId));
+
+        const uploadResponse = await fetch("https://server-efvt.onrender.com/jogo/backoffice/adicionar-imagem-item", {
+          method: "POST",
+          headers: {
+            "Authorization": `${token}`, 
+          },
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          alert("Erro ao enviar imagens");
+          return;
+        }
+      }
+
+      alert("Item criado com sucesso!");
+      setItemName("");
+      setPrice("");
+      setImages(null);
+      navigate("/loja");
+    } catch (error) {
     }
-  }, [id]);
+  };
 
   return (
     <div className="min-h-screen w-full bg-gray-100 px-4 py-8 text-left">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-2xl font-bold mb-2">Loja</h2>
-        <p className="text-sm text-gray-600 mb-8">Editar item</p>
+        <p className="text-sm text-gray-600 mb-8">Criar novo item</p>
 
         <div className="flex gap-8">
           <div className="flex flex-col gap-4 w-full max-w-md">
+            {/* Nome */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nome</label>
               <input
@@ -39,63 +96,61 @@ export default function CriarItem() {
               />
             </div>
 
+            {/* Tipo */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Tipo</label>
-              <input
+              <select
                 value={itemType}
-                onChange={(e) => setItemType(e.target.value)}
+                onChange={(e) => setItemType(e.target.value as ItemLoja["tipo"])}
                 className="w-full border border-gray-300 rounded px-2 py-1"
-              />
+              >
+                <option value="deck">Deck</option>
+                <option value="avatar">Avatar</option>
+                <option value="fundo">Fundo</option>
+              </select>
             </div>
 
+            {/* Disponibilidade */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Disponibilidade</label>
-              <input
+              <select
                 value={availability}
-                onChange={(e) => setAvailability(e.target.value)}
+                onChange={(e) => setAvailability(e.target.value as ItemLoja["disponibilidade"])}
                 className="w-full border border-gray-300 rounded px-2 py-1"
-              />
+              >
+                <option value="disponivel">Disponível</option>
+                <option value="indisponivel">Indisponível</option>
+              </select>
             </div>
 
+            {/* Preço */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Preço</label>
               <input
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 className="w-full border border-gray-300 rounded px-2 py-1"
+                type="number"
               />
             </div>
 
-            <button className="bg-blue-600 text-white rounded py-1 mt-2 hover:bg-blue-700 transition"
-            onClick={() => {
-                
-            }}>
-              Criar
-            </button>
-          </div>
-
-          <div className="flex flex-col items-start gap-2">
-          <div className="grid grid-cols-5 gap-2">
-            {[...Array(imagens)].map((_, i) => (
-                <div
-                key={i}
-                className="w-[100px] h-[100px] bg-gray-400 flex items-center justify-center text-white text-sm rounded"
-                >
-                <img
-                    src="/assets/cat.jpeg"
-                    alt={`Image ${i + 1}`}
-                    className="w-full h-full object-cover rounded"
-                />
-                </div>
-            ))}
+            {/* Imagens */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Imagens (até 10)</label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => setImages(e.target.files)}
+                className="w-full"
+              />
             </div>
 
-            <div className="text-sm text-gray-800">{imageName}</div>
-            <button className="bg-gray-600 text-white text-sm px-3 py-1 rounded hover:bg-gray-700 transition">
-              Upload
-            </button>
-            <button className="border border-red-500 text-red-500 text-sm px-3 py-1 rounded hover:bg-red-100 transition">
-              Deletar
+            <button
+              className="bg-blue-600 text-white rounded py-1 mt-2 hover:bg-blue-700 transition"
+              onClick={handleCreate}
+            >
+              Criar
             </button>
           </div>
         </div>

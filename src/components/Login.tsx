@@ -8,18 +8,33 @@ export default function Usuarios() {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password.length < 8) {
       setError("A senha deve ter pelo menos 8 caracteres.");
       return;
     }
+    
+    const response = await fetch("https://server-efvt.onrender.com/login-backoffice", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        usuario: username,
+        senha: password
+      })
+    });
 
-    setError("");
-    console.log("Logging in with", { username, password });
+    const token = response.headers.get("Authorization");    
+    if (token) {
+      localStorage.setItem("token", token); 
+      navigate("/loja");
+    } else {
+      alert("usuário ou senha inválidos")
+    }
 
-    navigate("/Loja");
   };
 
   return (

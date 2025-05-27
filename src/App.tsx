@@ -9,14 +9,13 @@ import CriarItem from "./components/CriarItem";
 function App() {
   return (
     <div className="bg-gray-100">
-      <Navbar />
       <Routes>
         <Route path="/" element={<Shop />} />
-        <Route path="/Login" element={<Login />} />
-        <Route path="/Loja" element={<Shop />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/loja" element={<Shop />} />
         <Route path="/edit/:id" element={<EditItem />} />
-        <Route path="/Usuarios" element={<Usuarios />}/>
-        <Route path="/CriarItem" element={<CriarItem />}/>
+        <Route path="/usuarios" element={<Usuarios />}/>
+        <Route path="/criar-item" element={<CriarItem />}/>
       </Routes>
     </div>
   );
